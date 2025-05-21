@@ -3,3 +3,10 @@ pies
 słoń
 żyrafa
 lew
+lama
+koza
+żaba
+kura
+sowa
+ryba
+kret

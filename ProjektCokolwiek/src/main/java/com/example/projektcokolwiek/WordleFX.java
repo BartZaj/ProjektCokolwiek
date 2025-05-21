@@ -2,215 +2,256 @@ package com.example.projektcokolwiek;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class WordleFX extends Application {
 
     private String slowoDoZgadniecia;
-    private int proby = 0;
-    private TextField inputField = new TextField();
+    private int proby;
+    private static final int MAKS_PROB = 6;
+    private static final int MAKS_DL_SLOWA = 6;
+
     private VBox wynikBox = new VBox(5);
     private Label komunikatLabel = new Label();
     private ComboBox<String> kategoriaBox = new ComboBox<>();
     private ComboBox<String> trybBox = new ComboBox<>();
-    private Button startBtn = new Button("Start");
     private Map<String, List<String>> kategorieMap = new HashMap<>();
-    private static final int MAKS_PRÓB = 6;
-    private static final int MAKS_DL_SLOWA = 6;
-    private final Map<Character, Button> klawiaturaMap = new HashMap<>();
-    private GridPane klawiaturaPane = new GridPane();
-    private List<String> aktualnaListaSlow = new ArrayList<>();
+    private List<String> aktualnaListaSlow;
+    private VBox klawiaturaBox = new VBox(10);
+    private Label tytul;
 
     @Override
     public void start(Stage primaryStage) {
-        // Tytuł i kontrolki wyboru
-        Label tytul = new Label("Gra słowna");
-        tytul.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+        Font font36 = Font.loadFont(getClass().getResourceAsStream("/fonts/HelveticaNeueMedium.otf"), 36);
+        Font font16 = Font.loadFont(getClass().getResourceAsStream("/fonts/HelveticaNeueMedium.otf"), 16);
+
+        tytul = new Label("STUDLE");
+        tytul.setFont(font36);
+        tytul.setTextFill(Color.WHITE);
+        tytul.setAlignment(Pos.CENTER);
+        tytul.setMaxWidth(Double.MAX_VALUE);
 
         kategoriaBox.getItems().addAll("Zwierzęta", "Państwa", "Losowe");
+        kategoriaBox.setPromptText("Wybierz kategorię");
+        kategoriaBox.setStyle("-fx-font-family: 'HelveticaNeueMedium'; -fx-font-size: 16px;");
+        kategoriaBox.setOnAction(e -> rozpocznijGre());
+
         trybBox.getItems().addAll("Zgadywanie liter", "Zgadywanie słów");
+        trybBox.setPromptText("Wybierz tryb");
+        trybBox.setStyle("-fx-font-family: 'HelveticaNeueMedium'; -fx-font-size: 16px;");
+        trybBox.setOnAction(e -> rozpocznijGre());
 
-        startBtn.setOnAction(e -> rozpocznijGre());
+        Button resetButton = new Button("Reset");
+        resetButton.setFont(font16);
+        resetButton.setStyle("-fx-font-family: 'HelveticaNeueMedium'; -fx-font-size: 16px;");
+        resetButton.setOnAction(e -> resetGame());
 
-        inputField.setPromptText("Wpisz literę lub słowo");
-        inputField.setDisable(true);
+        HBox selectionPanel = new HBox(10, kategoriaBox, trybBox, resetButton);
+        selectionPanel.setAlignment(Pos.CENTER);
 
-        Button zgadnijBtn = new Button("Zgadnij");
-        zgadnijBtn.setOnAction(e -> sprawdzOdpowiedz());
-        zgadnijBtn.setDisable(true);
+        komunikatLabel.setFont(font16);
+        komunikatLabel.setTextFill(Color.WHITE);
+        komunikatLabel.setText("Wybierz kategorię i tryb, aby rozpocząć grę.");
+        komunikatLabel.setAlignment(Pos.CENTER);
+        komunikatLabel.setMaxWidth(Double.MAX_VALUE);
 
-        // Wyniki z przewijaniem
-        ScrollPane scrollPane = new ScrollPane(wynikBox);
-        scrollPane.setPrefHeight(400);
-        scrollPane.setFitToWidth(true);
-        wynikBox.setPadding(new Insets(10));
-        wynikBox.setPrefWidth(400);
+        wynikBox.setAlignment(Pos.CENTER);
+        wynikBox.setPrefHeight((40 + 5) * MAKS_PROB);
+        wynikBox.setStyle("-fx-background-color: black;");
+        wynikBox.setVisible(false);
 
-        // Klawiatura
-        klawiaturaPane.setPadding(new Insets(10));
-        utworzKlawiature();
+        utworzKlawiature(font16);
+        klawiaturaBox.setVisible(false);
 
-        VBox topPanel = new VBox(10,
-                tytul,
-                new Label("Wybierz kategorię:"), kategoriaBox,
-                new Label("Wybierz tryb gry:"), trybBox,
-                startBtn,
-                inputField,
-                zgadnijBtn,
-                komunikatLabel
-        );
+        VBox topPanel = new VBox(10, tytul, selectionPanel, komunikatLabel);
+        topPanel.setAlignment(Pos.CENTER);
 
-        VBox mainLayout = new VBox(15,
-                topPanel,
-                scrollPane,
-                klawiaturaPane
-        );
-
+        VBox mainLayout = new VBox(15, topPanel, wynikBox, klawiaturaBox);
         mainLayout.setPadding(new Insets(20));
+        mainLayout.setStyle("-fx-background-color: black;");
+
+        Scene scene = new Scene(mainLayout, 600, 800, Color.BLACK);
+        scene.addEventFilter(KeyEvent.KEY_TYPED, this::handleTyped);
+
         wczytajKategorie();
-        Scene scene = new Scene(mainLayout, 600, 800);  // zwiększona wysokość
         primaryStage.setTitle("WordleFX");
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false); // opcjonalnie: blokuj rozmiar
+        primaryStage.setResizable(false);
         primaryStage.show();
-
-        startBtn.setUserData(zgadnijBtn);
     }
-
 
     private void rozpocznijGre() {
-        String kategoria = kategoriaBox.getValue();
+        String kat = kategoriaBox.getValue();
         String tryb = trybBox.getValue();
-
-        if (kategoria == null || tryb == null) {
-            komunikatLabel.setText("Wybierz kategorię i tryb gry.");
+        if (kat == null || tryb == null) {
+            komunikatLabel.setText("Wybierz kategorię i tryb.");
             return;
         }
 
-        List<String> slowa = kategorieMap.getOrDefault(kategoria, Collections.emptyList());
-        if (slowa.isEmpty()) {
-            komunikatLabel.setText("Brak słów w wybranej kategorii.");
+        aktualnaListaSlow = kategorieMap.getOrDefault(kat, Collections.emptyList());
+        if (aktualnaListaSlow.isEmpty()) {
+            komunikatLabel.setText("Brak słów w kategorii.");
             return;
         }
 
-        aktualnaListaSlow = slowa; // <-- zapamiętaj listę słów
-
-        slowoDoZgadniecia = slowa.get(new Random().nextInt(slowa.size())).toLowerCase();
+        slowoDoZgadniecia = aktualnaListaSlow.get(new Random().nextInt(aktualnaListaSlow.size()));
         proby = 0;
+        komunikatLabel.setText("Gra rozpoczęta! Wpisz literę lub słowo i naciśnij ENTER.");
         wynikBox.getChildren().clear();
-        inputField.setDisable(false);
-        ((Button) startBtn.getUserData()).setDisable(false);
-        komunikatLabel.setText("Gra rozpoczęta! Długość słowa: " + slowoDoZgadniecia.length());
+
+        int len = slowoDoZgadniecia.length();
+        for (int i = 0; i < MAKS_PROB; i++) {
+            HBox row = new HBox(5);
+            row.setAlignment(Pos.CENTER);
+            for (int j = 0; j < len; j++) {
+                Label slot = new Label();
+                slot.setMinSize(40, 40);
+                slot.setAlignment(Pos.CENTER);
+                slot.setStyle("-fx-border-color: gray; -fx-border-width: 1px; -fx-background-color: black;");
+                row.getChildren().add(slot);
+            }
+            wynikBox.getChildren().add(row);
+        }
+        wynikBox.setVisible(true);
+        klawiaturaBox.setVisible(true);
     }
 
+    private void resetGame() {
+        slowoDoZgadniecia = null;
+        proby = 0;
+        kategoriaBox.getSelectionModel().clearSelection();
+        trybBox.getSelectionModel().clearSelection();
+        wynikBox.setVisible(false);
+        klawiaturaBox.setVisible(false);
+        komunikatLabel.setText("Wybierz kategorię i tryb, aby rozpocząć grę.");
+        for (var row : klawiaturaBox.getChildren()) {
+            if (row instanceof HBox) {
+                for (var btn : ((HBox) row).getChildren()) {
+                    Button b = (Button) btn;
+                    b.setDisable(true);
+                    b.setStyle("-fx-background-color: lightgray; -fx-text-fill: white; -fx-font-weight: bold;");
+                }
+            }
+        }
+    }
 
-    private void sprawdzOdpowiedz() {
-        String input = inputField.getText().toLowerCase().trim();
-        inputField.clear();
+    private void handleTyped(KeyEvent e) {
+        if (slowoDoZgadniecia == null) return;
+        HBox row = (HBox) wynikBox.getChildren().get(proby);
+        String chStr = e.getCharacter();
+        if (chStr.isEmpty()) return;
 
-        if (input.isEmpty()) {
-            komunikatLabel.setText("Wpisz coś!");
+        char c = chStr.charAt(0);
+        if (c == '\r') {
+            String guess = row.getChildren().stream()
+                    .map(n -> ((Label) n).getText())
+                    .reduce("", String::concat)
+                    .toLowerCase();
+            if (guess.length() == slowoDoZgadniecia.length()) {
+                sprawdzOdpowiedz(guess);
+            }
+        } else if (c == '\b') {
+            var slots = row.getChildren().stream().map(n -> (Label) n).toList();
+            for (int i = slots.size() - 1; i >= 0; i--) {
+                if (!slots.get(i).getText().isEmpty()) {
+                    slots.get(i).setText("");
+                    break;
+                }
+            }
+        } else if (Character.isLetter(c)) {
+            c = Character.toUpperCase(c);
+            for (var node : row.getChildren()) {
+                Label slot = (Label) node;
+                if (slot.getText().isEmpty()) {
+                    slot.setText(String.valueOf(c));
+                    break;
+                }
+            }
+        }
+    }
+
+    private void sprawdzOdpowiedz(String guess) {
+        if (!aktualnaListaSlow.contains(guess)) {
+            komunikatLabel.setText("Nie ma takiego słowa.");
             return;
         }
-
-        if (proby >= MAKS_PRÓB) {
-            komunikatLabel.setText("Koniec gry! Wykorzystano wszystkie próby. Hasło to: " + slowoDoZgadniecia.toUpperCase());
-            inputField.setDisable(true);
-            return;
+        HBox row = (HBox) wynikBox.getChildren().get(proby);
+        for (int i = 0; i < guess.length(); i++) {
+            Label slot = (Label) row.getChildren().get(i);
+            char ch = guess.charAt(i);
+            slot.setText(String.valueOf(ch).toUpperCase());
+            if (ch == slowoDoZgadniecia.charAt(i)) {
+                slot.setStyle(slot.getStyle().replace("black", "limegreen"));
+                updateKeyStyle(ch, "limegreen");
+            } else if (slowoDoZgadniecia.contains(String.valueOf(ch))) {
+                slot.setStyle(slot.getStyle().replace("black", "gold"));
+                updateKeyStyle(ch, "gold");
+            } else {
+                slot.setStyle(slot.getStyle().replace("black", "salmon"));
+                updateKeyStyle(ch, "salmon");
+            }
         }
-
         proby++;
-
-        if ("Zgadywanie liter".equals(trybBox.getValue())) {
-            if (input.length() != 1 || !Character.isLetter(input.charAt(0))) {
-                komunikatLabel.setText("Wpisz tylko jedną literę.");
-                return;
-            }
-
-            char litera = input.charAt(0);
-            char[] wynik = new char[slowoDoZgadniecia.length()];
-            Arrays.fill(wynik, '_');
-
-            for (int i = 0; i < slowoDoZgadniecia.length(); i++) {
-                if (slowoDoZgadniecia.charAt(i) == litera) {
-                    wynik[i] = litera;
-                } else if (wynikBox.getChildren().size() > 0) {
-                    wynik[i] = ((Text) wynikBox.getChildren().get(wynikBox.getChildren().size() - 1)).getText().charAt(i);
-                }
-            }
-
-            Text wynikText = new Text(String.valueOf(wynik));
-            wynikBox.getChildren().add(wynikText);
-
-            if (String.valueOf(wynik).equals(slowoDoZgadniecia)) {
-                komunikatLabel.setText("Gratulacje! Odgadłeś słowo w " + proby + " próbach.");
-                inputField.setDisable(true);
-            } else {
-                komunikatLabel.setText("Spróbuj dalej!");
-            }
-
-        } else { // Tryb zgadywania słów
-            if (input.length() != slowoDoZgadniecia.length()) {
-                komunikatLabel.setText("Słowo musi mieć " + slowoDoZgadniecia.length() + " liter.");
-                return;
-            }
-
-            // Walidacja: czy słowo znajduje się w aktualnej liście słów
-            if (!aktualnaListaSlow.contains(input)) {
-                switch (kategoriaBox.getValue()) {
-                    case "Państwa" -> komunikatLabel.setText("Nie ma takiego państwa.");
-                    case "Zwierzęta" -> komunikatLabel.setText("Nie ma takiego zwierzęcia.");
-                    default -> komunikatLabel.setText("Nie ma takiego słowa.");
-                }
-                proby--; // Nie licz błędnej próby
-                return;
-            }
-
-            HBox kolorowyWynik = new HBox(5);
-            for (int i = 0; i < input.length(); i++) {
-                char ch = input.charAt(i);
-                Label literaLabel = new Label(String.valueOf(ch).toUpperCase());
-
-                int szerokosc = 360 / slowoDoZgadniecia.length(); // dostosuj do długości słowa
-                literaLabel.setMinSize(szerokosc - 10, 40);
-                literaLabel.setAlignment(javafx.geometry.Pos.CENTER);
-                literaLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-border-color: black; -fx-border-width: 1px;");
-
-                if (ch == slowoDoZgadniecia.charAt(i)) {
-                    literaLabel.setBackground(new Background(new BackgroundFill(Color.LIMEGREEN, new CornerRadii(5), Insets.EMPTY)));
-                } else if (slowoDoZgadniecia.contains(String.valueOf(ch))) {
-                    literaLabel.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(5), Insets.EMPTY)));
-                } else {
-                    literaLabel.setBackground(new Background(new BackgroundFill(Color.SALMON, new CornerRadii(5), Insets.EMPTY)));
-                }
-
-                kolorowyWynik.getChildren().add(literaLabel);
-            }
-
-            wynikBox.getChildren().add(kolorowyWynik);
-            aktualizujKlawiature(input);
-
-            if (input.equals(slowoDoZgadniecia)) {
-                komunikatLabel.setText("Brawo! Odgadłeś całe słowo.");
-                inputField.setDisable(true);
-            } else if (proby >= MAKS_PRÓB) {
-                komunikatLabel.setText("Koniec gry! Hasło to: " + slowoDoZgadniecia.toUpperCase());
-                inputField.setDisable(true);
-            } else {
-                komunikatLabel.setText("Zła próba. Próbuj dalej.");
-            }
+        if (guess.equals(slowoDoZgadniecia)) {
+            komunikatLabel.setText("Brawo! Odgadłeś słowo.");
+        } else if (proby >= MAKS_PROB) {
+            komunikatLabel.setText("Koniec gry! Hasło to: " + slowoDoZgadniecia.toUpperCase());
+        } else {
+            komunikatLabel.setText("Spróbuj dalej (" + (MAKS_PROB - proby) + " prób pozostało)");
         }
     }
 
+    private void utworzKlawiature(Font font) {
+        klawiaturaBox.getChildren().clear();
+        String[] rows = {"QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM", "ĄĆĘŁŃÓŚŹŻ"};
+        for (String r : rows) {
+            HBox rowBox = new HBox(5);
+            rowBox.setAlignment(Pos.CENTER);
+            for (char c : r.toCharArray()) {
+                Button btn = new Button(String.valueOf(c));
+                btn.setFont(font);
+                btn.setMinSize(30, 40);
+                btn.setStyle("-fx-background-color: lightgray; -fx-text-fill: white; -fx-font-weight: bold;");
+                btn.setDisable(true);
+                rowBox.getChildren().add(btn);
+            }
+            klawiaturaBox.getChildren().add(rowBox);
+        }
+    }
+
+    private void updateKeyStyle(char ch, String color) {
+        for (var node : klawiaturaBox.getChildren()) {
+            if (node instanceof HBox) {
+                for (var btn : ((HBox) node).getChildren()) {
+                    Button b = (Button) btn;
+                    if (b.getText().charAt(0) == Character.toUpperCase(ch)) {
+                        b.setDisable(false);
+                        b.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-font-weight: bold;");
+                        return;
+                    }
+                }
+            }
+        }
+    }
 
     private void wczytajKategorie() {
         kategorieMap.put("Zwierzęta", wczytajSlowaZPliku("zwierzeta.txt"));
@@ -218,69 +259,18 @@ public class WordleFX extends Application {
         kategorieMap.put("Losowe", wczytajSlowaZPliku("slowa.txt"));
     }
 
-    private List<String> wczytajSlowaZPliku(String nazwaPliku) {
+    private List<String> wczytajSlowaZPliku(String nazwa) {
         try {
-            return Files.readAllLines(Paths.get(nazwaPliku)).stream()
+            return Files.readAllLines(Paths.get(nazwa)).stream()
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
                     .map(String::toLowerCase)
                     .filter(s -> s.length() <= MAKS_DL_SLOWA)
                     .toList();
         } catch (IOException e) {
-            System.err.println("Błąd odczytu pliku: " + nazwaPliku + " - " + e.getMessage());
             return Collections.emptyList();
         }
     }
-    private void utworzKlawiature() {
-        klawiaturaPane.getChildren().clear();
-        klawiaturaMap.clear();
-        klawiaturaPane.setHgap(5);
-        klawiaturaPane.setVgap(5);
-        klawiaturaPane.setPadding(new Insets(10));
-
-        String[] wiersze = {
-                "QWERTYUIOP",
-                "ASDFGHJKL",
-                "ZXCVBNM",
-                "ĄĆĘŁŃÓŚŹŻ"  // <- polskie znaki w osobnym rzędzie
-        };
-
-        for (int w = 0; w < wiersze.length; w++) {
-            String rzad = wiersze[w];
-            for (int k = 0; k < rzad.length(); k++) {
-                char litera = rzad.charAt(k);
-                Button btn = new Button(String.valueOf(litera));
-                btn.setMinSize(30, 40);
-                btn.setStyle("-fx-background-color: lightgray; -fx-font-weight: bold;");
-                btn.setDisable(true);  // opcjonalnie: aktywne przyciski
-                klawiaturaMap.put(litera, btn);
-                klawiaturaPane.add(btn, k, w);
-            }
-        }
-    }
-
-    private void aktualizujKlawiature(String input) {
-        input = input.toLowerCase();  // zapewnij spójność
-
-        for (int i = 0; i < input.length(); i++) {
-            char ch = input.charAt(i);
-            Button btn = klawiaturaMap.get(Character.toUpperCase(ch));
-            if (btn == null) continue;
-
-            if (ch == slowoDoZgadniecia.charAt(i)) {
-                btn.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-weight: bold;");
-            } else if (slowoDoZgadniecia.contains(String.valueOf(ch))) {
-                if (!btn.getStyle().contains("green")) {
-                    btn.setStyle("-fx-background-color: orange; -fx-text-fill: white; -fx-font-weight: bold;");
-                }
-            } else {
-                if (!btn.getStyle().contains("green") && !btn.getStyle().contains("orange")) {
-                    btn.setStyle("-fx-background-color: darkgray; -fx-text-fill: white; -fx-font-weight: bold;");
-                }
-            }
-        }
-    }
-
 
     public static void main(String[] args) {
         launch(args);
