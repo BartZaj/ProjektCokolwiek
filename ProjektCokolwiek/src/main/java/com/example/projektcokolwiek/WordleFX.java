@@ -28,16 +28,19 @@ public class WordleFX extends Application {
     private String slowoDoZgadniecia;
     private int proby;
     private static final int MAKS_PROB = 6;
+    private int maksymalneProby = MAKS_PROB;
     private static final int MAKS_DL_SLOWA = 6;
 
     private VBox wynikBox = new VBox(5);
     private Label komunikatLabel = new Label();
     private ComboBox<String> kategoriaBox = new ComboBox<>();
     private ComboBox<String> trybBox = new ComboBox<>();
+    private ComboBox<Integer> probyBox = new ComboBox<>();
     private Map<String, List<String>> kategorieMap = new HashMap<>();
     private List<String> aktualnaListaSlow;
     private VBox klawiaturaBox = new VBox(10);
     private Label tytul;
+
 
     @Override
     public void start(Stage primaryStage) {
@@ -50,23 +53,49 @@ public class WordleFX extends Application {
         tytul.setAlignment(Pos.CENTER);
         tytul.setMaxWidth(Double.MAX_VALUE);
 
-        kategoriaBox.getItems().addAll("Zwierzęta", "Państwa", "Losowe");
+        kategoriaBox.getItems().addAll("Zwierzęta", "Państwa", "Losowe", "Liczby");
         kategoriaBox.setPromptText("Wybierz kategorię");
         kategoriaBox.setStyle("-fx-font-family: 'HelveticaNeueMedium'; -fx-font-size: 16px;");
-        kategoriaBox.setOnAction(e -> rozpocznijGre());
+        kategoriaBox.setOnAction(e -> {
+            String selected = kategoriaBox.getValue();
+            boolean liczby = "Liczby".equals(selected);
+
+            trybBox.setDisable(liczby);
+            //trybBox.setVisible(!liczby);
+            //trybBox.setManaged(false);
+            probyBox.setDisable(!liczby);
+            //probyBox.setVisible(liczby);
+            //probyBox.setManaged(false);
+
+            if (liczby) {
+                trybBox.getSelectionModel().clearSelection();
+            }
+            rozpocznijGre();
+        });
 
         trybBox.getItems().addAll("Zgadywanie liter", "Zgadywanie słów");
         trybBox.setPromptText("Wybierz tryb");
         trybBox.setStyle("-fx-font-family: 'HelveticaNeueMedium'; -fx-font-size: 16px;");
         trybBox.setOnAction(e -> rozpocznijGre());
 
+        probyBox.getItems().addAll(6, 7, 8, 9, 10, 11, 12);
+        probyBox.setPromptText("Liczba prób");
+        probyBox.setStyle("-fx-font-family: 'HelveticaNeueMedium'; -fx-font-size: 16px;");
+        probyBox.setOnAction(e -> rozpocznijGre());
+
         Button resetButton = new Button("Reset");
         resetButton.setFont(font16);
         resetButton.setStyle("-fx-font-family: 'HelveticaNeueMedium'; -fx-font-size: 16px;");
         resetButton.setOnAction(e -> resetGame());
 
-        HBox selectionPanel = new HBox(10, kategoriaBox, trybBox, resetButton);
+        HBox selectionPanel = new HBox(10, kategoriaBox, trybBox, probyBox);
         selectionPanel.setAlignment(Pos.CENTER);
+
+        HBox resetPanel = new HBox(resetButton);
+        resetPanel.setAlignment(Pos.CENTER);
+
+        VBox mainPanel = new VBox(10, selectionPanel, resetPanel);
+        mainPanel.setAlignment(Pos.CENTER);
 
         komunikatLabel.setFont(font16);
         komunikatLabel.setTextFill(Color.WHITE);
@@ -75,14 +104,14 @@ public class WordleFX extends Application {
         komunikatLabel.setMaxWidth(Double.MAX_VALUE);
 
         wynikBox.setAlignment(Pos.CENTER);
-        wynikBox.setPrefHeight((40 + 5) * MAKS_PROB);
+        wynikBox.setPrefHeight((40 + 5) * maksymalneProby);
         wynikBox.setStyle("-fx-background-color: black;");
         wynikBox.setVisible(false);
 
         utworzKlawiature(font16);
         klawiaturaBox.setVisible(false);
 
-        VBox topPanel = new VBox(10, tytul, selectionPanel, komunikatLabel);
+        VBox topPanel = new VBox(10, tytul, mainPanel, komunikatLabel);
         topPanel.setAlignment(Pos.CENTER);
 
         VBox mainLayout = new VBox(15, topPanel, wynikBox, klawiaturaBox);
@@ -102,26 +131,45 @@ public class WordleFX extends Application {
     private void rozpocznijGre() {
         String kat = kategoriaBox.getValue();
         String tryb = trybBox.getValue();
-        if (kat == null || tryb == null) {
-            komunikatLabel.setText("Wybierz kategorię i tryb.");
+
+        if (kat == null) {
+            komunikatLabel.setText("Wybierz kategorię.");
             return;
         }
 
-        aktualnaListaSlow = kategorieMap.getOrDefault(kat, Collections.emptyList());
-        if (aktualnaListaSlow.isEmpty()) {
-            komunikatLabel.setText("Brak słów w kategorii.");
+        if (!kat.equals("Liczby") && tryb == null) {
+            komunikatLabel.setText("Wybierz tryb.");
             return;
         }
 
-        slowoDoZgadniecia = aktualnaListaSlow.get(new Random().nextInt(aktualnaListaSlow.size()));
+        // Obsługa liczby prób tylko dla kategorii "Liczby"
+        if (kat.equals("Liczby")) {
+            Integer wybraneProby = probyBox.getValue();
+            if (wybraneProby == null) {
+                komunikatLabel.setText("Wybierz liczbę prób.");
+                return;
+            }
+            maksymalneProby = wybraneProby;
+            slowoDoZgadniecia = String.format("%04d", new Random().nextInt(10000));
+        } else {
+            maksymalneProby = MAKS_PROB;
+            aktualnaListaSlow = kategorieMap.getOrDefault(kat, Collections.emptyList());
+            if (aktualnaListaSlow.isEmpty()) {
+                komunikatLabel.setText("Brak słów w kategorii.");
+                return;
+            }
+            slowoDoZgadniecia = aktualnaListaSlow.get(new Random().nextInt(aktualnaListaSlow.size()));
+        }
+
         proby = 0;
-        komunikatLabel.setText("Gra rozpoczęta! Wpisz literę lub słowo i naciśnij ENTER.");
+        komunikatLabel.setText("Gra rozpoczęta! Wpisz dane i naciśnij ENTER.");
         wynikBox.getChildren().clear();
 
         int len = slowoDoZgadniecia.length();
-        for (int i = 0; i < MAKS_PROB; i++) {
+        for (int i = 0; i < maksymalneProby; i++) {
             HBox row = new HBox(5);
             row.setAlignment(Pos.CENTER);
+
             for (int j = 0; j < len; j++) {
                 Label slot = new Label();
                 slot.setMinSize(40, 40);
@@ -129,10 +177,22 @@ public class WordleFX extends Application {
                 slot.setStyle("-fx-border-color: gray; -fx-border-width: 1px; -fx-background-color: black;");
                 row.getChildren().add(slot);
             }
+
+            // Jeśli kategoria to "Liczby", dodajemy Label z wynikiem trafień po prawej
+            if ("Liczby".equals(kategoriaBox.getValue())) {
+                Label trafioneLabel = new Label();
+                trafioneLabel.setMinWidth(120);
+                trafioneLabel.setTextFill(Color.WHITE);
+                trafioneLabel.setFont(Font.font(16));
+                trafioneLabel.setAlignment(Pos.CENTER_LEFT);
+                row.getChildren().add(trafioneLabel);
+            }
+
             wynikBox.getChildren().add(row);
         }
+
         wynikBox.setVisible(true);
-        klawiaturaBox.setVisible(true);
+        klawiaturaBox.setVisible(!kat.equals("Liczby"));
     }
 
     private void resetGame() {
@@ -156,18 +216,24 @@ public class WordleFX extends Application {
 
     private void handleTyped(KeyEvent e) {
         if (slowoDoZgadniecia == null) return;
+
         HBox row = (HBox) wynikBox.getChildren().get(proby);
         String chStr = e.getCharacter();
         if (chStr.isEmpty()) return;
 
         char c = chStr.charAt(0);
+
         if (c == '\r') {
             String guess = row.getChildren().stream()
                     .map(n -> ((Label) n).getText())
-                    .reduce("", String::concat)
-                    .toLowerCase();
+                    .reduce("", String::concat);
+
             if (guess.length() == slowoDoZgadniecia.length()) {
-                sprawdzOdpowiedz(guess);
+                if ("Liczby".equals(kategoriaBox.getValue())) {
+                    sprawdzLiczbe(guess);
+                } else {
+                    sprawdzOdpowiedz(guess.toLowerCase());
+                }
             }
         } else if (c == '\b') {
             var slots = row.getChildren().stream().map(n -> (Label) n).toList();
@@ -177,8 +243,9 @@ public class WordleFX extends Application {
                     break;
                 }
             }
-        } else if (Character.isLetter(c)) {
-            c = Character.toUpperCase(c);
+        } else if (("Liczby".equals(kategoriaBox.getValue()) && Character.isDigit(c))
+                || (!"Liczby".equals(kategoriaBox.getValue()) && Character.isLetter(c))) {
+
             for (var node : row.getChildren()) {
                 Label slot = (Label) node;
                 if (slot.getText().isEmpty()) {
@@ -189,7 +256,81 @@ public class WordleFX extends Application {
         }
     }
 
+    private void sprawdzLiczbe(String guess) {
+        int trafienia = 0;
+        for (int i = 0; i < 4; i++) {
+            if (guess.charAt(i) == slowoDoZgadniecia.charAt(i)) {
+                trafienia++;
+            }
+        }
+
+        HBox row = (HBox) wynikBox.getChildren().get(proby);
+        for (int i = 0; i < guess.length(); i++) {
+            Label slot = (Label) row.getChildren().get(i);
+            char ch = guess.charAt(i);
+            slot.setText(String.valueOf(ch));
+            // Tu nie zmieniamy kolorów na bieżąco, tylko zostawiamy czarne lub domyślne
+            slot.setStyle(slot.getStyle().replace("limegreen", "black")); // reset koloru na czarny
+        }
+
+// Sprawdzenie czy zgadnięto całą liczbę
+        boolean zgadniete = guess.equals(slowoDoZgadniecia);
+        if (zgadniete) {
+            // Jeśli zgadnięto całe słowo/liczbę - ustaw zielony kolor dla całego wiersza
+            for (int i = 0; i < guess.length(); i++) {
+                Label slot = (Label) row.getChildren().get(i);
+                slot.setStyle(slot.getStyle().replace("black", "limegreen"));
+            }
+        }
+
+        // Ustaw tekst trafionych cyfr w dodatkowym Labelu po prawej
+        if (row.getChildren().size() > 4) { // Sprawdzamy czy jest ten Label (indeks 4)
+            Label trafioneLabel = (Label) row.getChildren().get(4);
+            trafioneLabel.setText("Trafione cyfry: " + trafienia);
+        }
+
+        proby++;
+        if (trafienia == 4) {
+            komunikatLabel.setText("Brawo! Odgadłeś liczbę: " + slowoDoZgadniecia);
+        } else if (proby >= maksymalneProby) {
+            komunikatLabel.setText("Koniec gry! Liczba to: " + slowoDoZgadniecia);
+        } else {
+            komunikatLabel.setText("Poprawnych cyfr na miejscu: " + trafienia + ". Pozostało prób: " + (maksymalneProby - proby));
+        }
+    }
+
     private void sprawdzOdpowiedz(String guess) {
+        if (kategoriaBox.getValue().equals("Liczby")) {
+            if (guess.length() != 4 || !guess.matches("\\d{4}")) {
+                komunikatLabel.setText("Podaj dokładnie 4 cyfry.");
+                return;
+            }
+
+            int correctDigits = 0;
+            for (int i = 0; i < 4; i++) {
+                if (guess.charAt(i) == slowoDoZgadniecia.charAt(i)) {
+                    correctDigits++;
+                }
+            }
+
+            HBox row = (HBox) wynikBox.getChildren().get(proby);
+            for (int i = 0; i < 4; i++) {
+                Label slot = (Label) row.getChildren().get(i);
+                slot.setText(String.valueOf(guess.charAt(i)));
+                slot.setStyle("-fx-background-color: gray; -fx-border-color: white; -fx-border-width: 1px;");
+            }
+
+            proby++;
+            if (correctDigits == 4) {
+                komunikatLabel.setText("Brawo! Odgadłeś liczbę: " + slowoDoZgadniecia);
+            } else if (proby >= maksymalneProby) {
+                komunikatLabel.setText("Koniec gry! Liczba to: " + slowoDoZgadniecia);
+            } else {
+                komunikatLabel.setText("Trafionych cyfr na dobrych miejscach: " + correctDigits +
+                        ". Pozostało prób: " + (maksymalneProby - proby));
+            }
+            return;
+        }
         if (!aktualnaListaSlow.contains(guess)) {
             komunikatLabel.setText("Nie ma takiego słowa.");
             return;
@@ -213,10 +354,10 @@ public class WordleFX extends Application {
         proby++;
         if (guess.equals(slowoDoZgadniecia)) {
             komunikatLabel.setText("Brawo! Odgadłeś słowo.");
-        } else if (proby >= MAKS_PROB) {
+        } else if (proby >= maksymalneProby) {
             komunikatLabel.setText("Koniec gry! Hasło to: " + slowoDoZgadniecia.toUpperCase());
         } else {
-            komunikatLabel.setText("Spróbuj dalej (" + (MAKS_PROB - proby) + " prób pozostało)");
+            komunikatLabel.setText("Spróbuj dalej (" + (maksymalneProby - proby) + " prób pozostało)");
         }
     }
 
@@ -257,6 +398,7 @@ public class WordleFX extends Application {
         kategorieMap.put("Zwierzęta", wczytajSlowaZPliku("zwierzeta.txt"));
         kategorieMap.put("Państwa", wczytajSlowaZPliku("panstwa.txt"));
         kategorieMap.put("Losowe", wczytajSlowaZPliku("slowa.txt"));
+        kategorieMap.put("Liczby", Collections.singletonList("0000")); // placeholder
     }
 
     private List<String> wczytajSlowaZPliku(String nazwa) {
@@ -265,7 +407,7 @@ public class WordleFX extends Application {
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
                     .map(String::toLowerCase)
-                    .filter(s -> s.length() <= MAKS_DL_SLOWA)
+                    .filter(s -> s.length() <= maksymalneProby)
                     .toList();
         } catch (IOException e) {
             return Collections.emptyList();
