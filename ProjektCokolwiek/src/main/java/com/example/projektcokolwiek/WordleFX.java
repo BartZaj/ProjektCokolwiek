@@ -40,7 +40,7 @@ public class WordleFX extends Application {
     private List<String> aktualnaListaSlow;
     private VBox klawiaturaBox = new VBox(10);
     private Label tytul;
-
+    private boolean trybZgadywaniaLiter = false;
 
     @Override
     public void start(Stage primaryStage) {
@@ -127,7 +127,7 @@ public class WordleFX extends Application {
         primaryStage.setResizable(false);
         primaryStage.show();
     }
-
+    private char[] odkryteLitery;
     private void rozpocznijGre() {
         String kat = kategoriaBox.getValue();
         String tryb = trybBox.getValue();
@@ -151,7 +151,8 @@ public class WordleFX extends Application {
             }
             maksymalneProby = wybraneProby;
             slowoDoZgadniecia = String.format("%04d", new Random().nextInt(10000));
-        } else {
+        }
+        else {
             maksymalneProby = MAKS_PROB;
             aktualnaListaSlow = kategorieMap.getOrDefault(kat, Collections.emptyList());
             if (aktualnaListaSlow.isEmpty()) {
@@ -160,7 +161,40 @@ public class WordleFX extends Application {
             }
             slowoDoZgadniecia = aktualnaListaSlow.get(new Random().nextInt(aktualnaListaSlow.size()));
         }
+     if(tryb.equals("Zgadywanie liter"))
+        {
+            trybZgadywaniaLiter = true;
 
+            aktualnaListaSlow = kategorieMap.getOrDefault(kat, Collections.emptyList());
+            if (aktualnaListaSlow.isEmpty()) {
+                komunikatLabel.setText("Brak słów w pliku!");
+                return;
+            }
+            slowoDoZgadniecia = aktualnaListaSlow.get(new Random().nextInt(aktualnaListaSlow.size())).toLowerCase();
+
+// Inicjalizacja odkrytego słowa
+            odkryteLitery = new char[slowoDoZgadniecia.length()];
+            for (int i = 0; i < odkryteLitery.length; i++) {
+                odkryteLitery[i] = '_';
+            }
+            wynikBox.getChildren().clear();
+// Tworzenie wizualnej reprezentacji słowa
+            HBox row = new HBox(5);
+            row.setAlignment(Pos.CENTER);
+            for (int i = 0; i < odkryteLitery.length; i++) {
+                Label slot = new Label("_");
+                slot.setMinSize(40, 40);
+                slot.setAlignment(Pos.CENTER);
+                slot.setStyle("-fx-border-color: gray; -fx-border-width: 1px; -fx-background-color: black; -fx-text-fill: white;");
+                row.getChildren().add(slot);
+            }
+            wynikBox.getChildren().add(row);
+            wynikBox.setVisible(true);
+            klawiaturaBox.setVisible(true);
+
+            komunikatLabel.setText("Zgadnij litery!");
+            return;
+        }
         proby = 0;
         komunikatLabel.setText("Gra rozpoczęta! Wpisz dane i naciśnij ENTER.");
         wynikBox.getChildren().clear();
@@ -216,12 +250,17 @@ public class WordleFX extends Application {
 
     private void handleTyped(KeyEvent e) {
         if (slowoDoZgadniecia == null) return;
-
-        HBox row = (HBox) wynikBox.getChildren().get(proby);
         String chStr = e.getCharacter();
         if (chStr.isEmpty()) return;
 
         char c = chStr.charAt(0);
+        if (trybZgadywaniaLiter) {
+            if (Character.isLetter(c)) {
+                sprawdzZgadywanieLiter(Character.toLowerCase(c));
+            }
+            return;
+        }
+        HBox row = (HBox) wynikBox.getChildren().get(proby);
 
         if (c == '\r') {
             String guess = row.getChildren().stream()
@@ -253,6 +292,48 @@ public class WordleFX extends Application {
                     break;
                 }
             }
+        }
+    }
+    private void sprawdzZgadywanieLiter(char litera) {
+        boolean trafiona = false;
+        for (int i = 0; i < slowoDoZgadniecia.length(); i++) {
+            if (slowoDoZgadniecia.charAt(i) == litera) {
+                odkryteLitery[i] = litera;
+                trafiona = true;
+            }
+            else if (proby >= maksymalneProby) {
+                komunikatLabel.setText("Koniec gry! Hasło to: " + slowoDoZgadniecia.toUpperCase());
+                return;
+            }
+        }
+
+        aktualizujWynikBoxZLiterami();
+
+        if (!trafiona) {
+            proby++;
+        }
+
+        if (String.valueOf(odkryteLitery).equals(slowoDoZgadniecia)) {
+            komunikatLabel.setText("Brawo! Odgadłeś słowo.");
+        } else if (proby >= maksymalneProby) {
+            komunikatLabel.setText("Koniec gry! Hasło to: " + slowoDoZgadniecia.toUpperCase());
+            return;
+        } else {
+            komunikatLabel.setText("Pozostało prób: " + (maksymalneProby - proby));
+        }
+
+        updateKeyStyle(litera, trafiona ? "limegreen" : "salmon");
+
+    }
+    private void aktualizujWynikBoxZLiterami() {
+        HBox row = (HBox) wynikBox.getChildren().get(0);
+        row.getChildren().clear();
+        for (char ch : odkryteLitery) {
+            Label slot = new Label(ch == '_' ? "_" : String.valueOf(Character.toUpperCase(ch)));
+            slot.setMinSize(40, 40);
+            slot.setAlignment(Pos.CENTER);
+            slot.setStyle("-fx-border-color: gray; -fx-border-width: 1px; -fx-background-color: black; -fx-text-fill: white;");
+            row.getChildren().add(slot);
         }
     }
 
