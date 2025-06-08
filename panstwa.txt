@@ -1,4 +1,67 @@
 polska
 niemcy
 francja
+włochy
 hiszpania
+portugalia
+czeska republika
+słowacja
+węgry
+rosja
+ukraina
+białoruś
+litwa
+łotwa
+estonia
+szwecja
+norwegia
+finlandia
+dania
+islandia
+grecja
+rumunia
+bułgaria
+serbia
+chorwacja
+słowenia
+bośnia i hercegowina
+czarnogóra
+macedonia północna
+albania
+turcja
+egipt
+maroko
+tunezja
+algieria
+kanada
+stany zjednoczone
+meksyk
+brazylia
+argentyna
+chile
+peru
+kolumbia
+wenezuela
+australia
+nowa zelandia
+chiny
+japonia
+korea południowa
+korea północna
+indie
+pakistan
+bangladesz
+nepal
+iran
+irak
+izraela
+arabia saudyjska
+afganistan
+kazachstan
+mongolia
+tajlandia
+wietnam
+filipiny
+indonezja
+malezja
+singapur

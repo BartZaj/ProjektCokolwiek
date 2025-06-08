@@ -53,7 +53,7 @@ public class WordleFX extends Application {
         tytul.setAlignment(Pos.CENTER);
         tytul.setMaxWidth(Double.MAX_VALUE);
 
-        kategoriaBox.getItems().addAll("Zwierzęta", "Państwa", "Losowe", "Liczby");
+        kategoriaBox.getItems().addAll("Zwierzęta", "Rośliny", "Państwa", "Miasta", "Imiona", "Losowe", "Liczby");
         kategoriaBox.setPromptText("Wybierz kategorię");
         kategoriaBox.setStyle("-fx-font-family: 'HelveticaNeueMedium'; -fx-font-size: 16px;");
         kategoriaBox.setOnAction(e -> {
@@ -128,6 +128,7 @@ public class WordleFX extends Application {
         primaryStage.show();
     }
     private char[] odkryteLitery;
+
     private void rozpocznijGre() {
         String kat = kategoriaBox.getValue();
         String tryb = trybBox.getValue();
@@ -295,6 +296,7 @@ public class WordleFX extends Application {
             }
         }
     }
+
     private void sprawdzZgadywanieLiter(char litera) {
         boolean trafiona = false;
         for (int i = 0; i < slowoDoZgadniecia.length(); i++) {
@@ -316,6 +318,7 @@ public class WordleFX extends Application {
 
         if (String.valueOf(odkryteLitery).equals(slowoDoZgadniecia)) {
             komunikatLabel.setText("Brawo! Odgadłeś słowo.");
+            return;
         } else if (proby >= maksymalneProby) {
             updateKeyStyle(litera, trafiona ? "limegreen" : "salmon");
             komunikatLabel.setText("Koniec gry! Hasło to: " + slowoDoZgadniecia.toUpperCase());
@@ -480,7 +483,10 @@ public class WordleFX extends Application {
 
     private void wczytajKategorie() {
         kategorieMap.put("Zwierzęta", wczytajSlowaZPliku("zwierzeta.txt"));
+        kategorieMap.put("Rośliny", wczytajSlowaZPliku("rosliny.txt"));
         kategorieMap.put("Państwa", wczytajSlowaZPliku("panstwa.txt"));
+        kategorieMap.put("Miasta", wczytajSlowaZPliku("miasta.txt"));
+        kategorieMap.put("Imiona", wczytajSlowaZPliku("imiona.txt"));
         kategorieMap.put("Losowe", wczytajSlowaZPliku("slowa.txt"));
         kategorieMap.put("Liczby", Collections.singletonList("0000")); // placeholder
     }
