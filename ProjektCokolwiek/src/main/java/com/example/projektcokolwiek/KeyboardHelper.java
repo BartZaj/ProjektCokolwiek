@@ -2,8 +2,6 @@ package com.example.projektcokolwiek;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -27,7 +25,7 @@ public class KeyboardHelper {
             klawiaturaBox.getChildren().add(rowBox);
         }
     }
-    public static void updateKeyStyle(char ch, String color, VBox klawiaturaBox) {
+    public static void aktualizujKlawiature (char ch, String color, VBox klawiaturaBox) {
         for (var node : klawiaturaBox.getChildren()) {
             if (node instanceof HBox) {
                 for (var btn : ((HBox) node).getChildren()) {

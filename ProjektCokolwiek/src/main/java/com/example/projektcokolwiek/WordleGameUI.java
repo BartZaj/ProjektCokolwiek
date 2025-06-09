@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import static com.example.projektcokolwiek.KeyboardHelper.updateKeyStyle;
+import static com.example.projektcokolwiek.KeyboardHelper.aktualizujKlawiature;
 
 public class WordleGameUI {
     private String slowoDoZgadniecia;
@@ -106,7 +106,7 @@ public class WordleGameUI {
         Button resetButton = new Button("Reset");
         resetButton.setFont(font16);
         resetButton.setStyle("-fx-font-family: 'HelveticaNeueMedium'; -fx-font-size: 16px;");
-        resetButton.setOnAction(e -> resetGame());
+        resetButton.setOnAction(e -> zresetujGre());
 
         HBox selectionPanel = new HBox(10, kategoriaBox, trybBox, probyBox);
         selectionPanel.setAlignment(Pos.CENTER);
@@ -136,7 +136,7 @@ public class WordleGameUI {
         root.setStyle("-fx-background-color: black;");
 
         Scene scene = new Scene(root, 600, 800, Color.BLACK);
-        scene.addEventFilter(KeyEvent.KEY_TYPED, this::handleTyped);
+        scene.addEventFilter(KeyEvent.KEY_TYPED, this::zarzadzajKlawiszami);
 
         try {
             wczytajKategorie();
@@ -250,7 +250,7 @@ public class WordleGameUI {
         }
     }
 
-    private void resetGame() {
+    private void zresetujGre() {
         clearGameDisplay();
         graTrwa = false;
         kategoriaBox.setDisable(graTrwa);
@@ -267,7 +267,7 @@ public class WordleGameUI {
 
         komunikatLabel.setText("Wybierz kategorię, aby zacząć.");
     }
-    private void handleTyped(KeyEvent e) {
+    private void zarzadzajKlawiszami (KeyEvent e) {
         try {
             if (slowoDoZgadniecia == null || !graTrwa) return;
 
@@ -358,7 +358,7 @@ public class WordleGameUI {
             graTrwa = false;
             return;
         } else if (proby >= maksymalneProby) {
-            updateKeyStyle(litera, trafiona ? "limegreen" : "salmon", klawiaturaBox);
+            aktualizujKlawiature(litera, trafiona ? "limegreen" : "salmon", klawiaturaBox);
             komunikatLabel.setText("Koniec gry! Hasło to: " + slowoDoZgadniecia.toUpperCase());
             graTrwa = false;
             return;
@@ -366,7 +366,7 @@ public class WordleGameUI {
             komunikatLabel.setText("Pozostało prób: " + (maksymalneProby - proby));
         }
 
-        updateKeyStyle(litera, trafiona ? "limegreen" : "salmon", klawiaturaBox);
+        aktualizujKlawiature(litera, trafiona ? "limegreen" : "salmon", klawiaturaBox);
 
     }
 
@@ -483,13 +483,13 @@ public class WordleGameUI {
                 slot.setText(String.valueOf(ch).toUpperCase());
                 if (ch == slowoDoZgadniecia.charAt(i)) {
                     slot.setStyle(slot.getStyle().replace("black", "limegreen"));
-                    updateKeyStyle(ch, "limegreen",klawiaturaBox);
+                    aktualizujKlawiature(ch, "limegreen",klawiaturaBox);
                 } else if (slowoDoZgadniecia.contains(String.valueOf(ch))) {
                     slot.setStyle(slot.getStyle().replace("black", "gold"));
-                    updateKeyStyle(ch, "gold",klawiaturaBox);
+                    aktualizujKlawiature(ch, "gold",klawiaturaBox);
                 } else {
                     slot.setStyle(slot.getStyle().replace("black", "salmon"));
-                    updateKeyStyle(ch, "salmon",klawiaturaBox);
+                    aktualizujKlawiature(ch, "salmon",klawiaturaBox);
                 }
             }
             proby++;
