@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import static com.example.projektcokolwiek.KeyboardHelper.updateKeyStyle;
 
 public class WordleGameUI {
     private String slowoDoZgadniecia;
@@ -357,7 +358,7 @@ public class WordleGameUI {
             graTrwa = false;
             return;
         } else if (proby >= maksymalneProby) {
-            updateKeyStyle(litera, trafiona ? "limegreen" : "salmon");
+            updateKeyStyle(litera, trafiona ? "limegreen" : "salmon", klawiaturaBox);
             komunikatLabel.setText("Koniec gry! Hasło to: " + slowoDoZgadniecia.toUpperCase());
             graTrwa = false;
             return;
@@ -365,7 +366,7 @@ public class WordleGameUI {
             komunikatLabel.setText("Pozostało prób: " + (maksymalneProby - proby));
         }
 
-        updateKeyStyle(litera, trafiona ? "limegreen" : "salmon");
+        updateKeyStyle(litera, trafiona ? "limegreen" : "salmon", klawiaturaBox);
 
     }
 
@@ -416,20 +417,7 @@ public class WordleGameUI {
         }
     }
 
-    private void updateKeyStyle(char ch, String color) {
-        for (var node : klawiaturaBox.getChildren()) {
-            if (node instanceof HBox) {
-                for (var btn : ((HBox) node).getChildren()) {
-                    Button b = (Button) btn;
-                    if (b.getText().charAt(0) == Character.toUpperCase(ch)) {
-                        b.setDisable(false);
-                        b.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-font-weight: bold;");
-                        return;
-                    }
-                }
-            }
-        }
-    }
+
     private void wczytajKategorie() {
         kategorieMap.put("Zwierzęta", wczytajSlowaZPliku("zwierzeta.txt"));
         kategorieMap.put("Rośliny", wczytajSlowaZPliku("rosliny.txt"));
@@ -495,13 +483,13 @@ public class WordleGameUI {
                 slot.setText(String.valueOf(ch).toUpperCase());
                 if (ch == slowoDoZgadniecia.charAt(i)) {
                     slot.setStyle(slot.getStyle().replace("black", "limegreen"));
-                    updateKeyStyle(ch, "limegreen");
+                    updateKeyStyle(ch, "limegreen",klawiaturaBox);
                 } else if (slowoDoZgadniecia.contains(String.valueOf(ch))) {
                     slot.setStyle(slot.getStyle().replace("black", "gold"));
-                    updateKeyStyle(ch, "gold");
+                    updateKeyStyle(ch, "gold",klawiaturaBox);
                 } else {
                     slot.setStyle(slot.getStyle().replace("black", "salmon"));
-                    updateKeyStyle(ch, "salmon");
+                    updateKeyStyle(ch, "salmon",klawiaturaBox);
                 }
             }
             proby++;

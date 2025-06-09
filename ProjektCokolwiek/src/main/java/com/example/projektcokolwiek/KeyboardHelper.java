@@ -27,4 +27,18 @@ public class KeyboardHelper {
             klawiaturaBox.getChildren().add(rowBox);
         }
     }
+    public static void updateKeyStyle(char ch, String color, VBox klawiaturaBox) {
+        for (var node : klawiaturaBox.getChildren()) {
+            if (node instanceof HBox) {
+                for (var btn : ((HBox) node).getChildren()) {
+                    Button b = (Button) btn;
+                    if (b.getText().charAt(0) == Character.toUpperCase(ch)) {
+                        b.setDisable(false);
+                        b.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-font-weight: bold;");
+                        return;
+                    }
+                }
+            }
+        }
+    }
 }
