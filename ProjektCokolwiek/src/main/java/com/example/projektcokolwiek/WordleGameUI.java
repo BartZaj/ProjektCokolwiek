@@ -1,5 +1,6 @@
 package com.example.projektcokolwiek;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -15,6 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -107,7 +109,12 @@ public class WordleGameUI {
         Button resetButton = new Button("Reset");
         resetButton.setFont(font16);
         resetButton.setStyle("-fx-font-family: 'HelveticaNeueMedium'; -fx-font-size: 16px;");
-        resetButton.setOnAction(e -> zresetujGre());
+        resetButton.setOnAction(e -> {
+            zresetujGre();
+            PauseTransition delay = new PauseTransition(Duration.millis(50));
+            delay.setOnFinished(ev -> zresetujGre());
+            delay.play();
+        });
 
         HBox selectionPanel = new HBox(10, kategoriaBox, trybBox, probyBox);
         selectionPanel.setAlignment(Pos.CENTER);
