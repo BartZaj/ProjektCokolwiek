@@ -1,6 +1,7 @@
 package com.example.projektcokolwiek;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -253,20 +254,37 @@ public class WordleGameUI {
     private void zresetujGre() {
         clearGameDisplay();
         graTrwa = false;
+
+
+
         kategoriaBox.setDisable(graTrwa);
         kategoriaBox.setValue(null);
-        kategoriaBox.setPromptText("Wybierz kategorię");
 
         trybBox.setDisable(true);
         trybBox.setValue(null);
-        trybBox.setPromptText("Wybierz tryb");
 
         probyBox.setDisable(true);
         probyBox.setValue(null);
-        probyBox.setPromptText("Liczba prób");
 
+        odswiezComboBox(kategoriaBox, "Wybierz kategorię");
+        odswiezComboBox(trybBox, "Wybierz tryb");
+        odswiezComboBox(probyBox, "Liczba prób");
         komunikatLabel.setText("Wybierz kategorię, aby zacząć.");
+
     }
+    private <T> void odswiezComboBox(ComboBox<T> comboBox, String prompt) {
+        List<T> items = new ArrayList<>(comboBox.getItems());
+
+        comboBox.getSelectionModel().clearSelection();
+        comboBox.setValue(null);
+        comboBox.setItems(FXCollections.observableArrayList());
+
+        comboBox.setPromptText(null);
+        comboBox.setPromptText(prompt);
+
+        comboBox.setItems(FXCollections.observableArrayList(items));
+    }
+
     private void zarzadzajKlawiszami (KeyEvent e) {
         try {
             if (slowoDoZgadniecia == null || !graTrwa) return;
