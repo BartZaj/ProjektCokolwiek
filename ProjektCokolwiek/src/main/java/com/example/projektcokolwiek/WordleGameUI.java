@@ -383,6 +383,7 @@ public class WordleGameUI {
 
         if (String.valueOf(odkryteLitery).equals(slowoDoZgadniecia)) {
             komunikatLabel.setText("Brawo! Odgadłeś słowo.");
+            aktualizujKlawiature(litera, trafiona ? "limegreen" : "salmon", klawiaturaBox);
             graTrwa = false;
             return;
         } else if (proby >= maksymalneProby) {

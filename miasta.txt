@@ -1,0 +1,66 @@
+amsterdam
+ankary (częściowo europejskie)
+ateny
+belgrad
+berlin
+birmingham
+bratysława
+bruksela
+bukareszt
+budapeszt
+canberra (tylko stolica australii)
+cardiff
+zagrzeb
+kopenhaga
+dublin
+edynburg
+eugen (miasto w USA)
+florencja
+gdańsk
+genewa
+glasgow
+hamburg
+helsinki
+istanbul (częściowo europejskie)
+kijów
+kraków
+lipsk
+lizbona
+liverpool
+lublana
+londyn
+luksemburg
+lyon
+madryt
+malmö
+manchester
+marsylia
+mediolan
+monachium
+moskwa (częściowo europejskie)
+neapol
+nicea
+oslo
+oulu
+paryż
+podgorica
+port harcourt (miasto w nigerii)
+poznań
+praga
+ryga
+rzym
+sarajewo
+sofia
+sztokholm
+tallin
+tirana
+tomaszów mazowiecki (miasto w polsce)
+tuluza
+turyn
+walencja
+warszawa
+wiedeń
+wilno
+wrocław
+zagrzeb
+zurych

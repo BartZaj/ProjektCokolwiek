@@ -1,2 +1,122 @@
+nowy jork
+londyn
 paryż
+tokio
+szanghaj
+dubaj
+rzym
+berlin
 madryt
+sydney
+rio de janeiro
+kapsztad
+kair
+moskwa
+pekin
+seul
+delhi
+meksyk
+toronto
+los angeles
+chicago
+houston
+miami
+vancouver
+montreal
+buenos aires
+santiago
+lima
+bogota
+quito
+caracas
+lizbona
+amsterdam
+bruksela
+wiedeń
+praga
+budapeszt
+warszawa
+kraków
+gdańsk
+wrocław
+poznań
+oslo
+sztokholm
+kopenhaga
+helsinki
+dublin
+edynburg
+manchester
+liverpool
+birmingham
+glasgow
+atlanta
+boston
+san francisco
+seattle
+dallas
+denver
+phoenix
+las vegas
+orlando
+nowy orlean
+portland
+honolulu
+ankara
+stambuł
+ateny
+tel awiw
+jerozolima
+bejrut
+damaszek
+rijad
+doha
+abu zabi
+kuwejt
+manama
+maskat
+amman
+bagdad
+teheran
+islamabad
+karaczi
+lahaur
+dhaka
+katmandu
+bangkok
+hanoi
+ho chi minh
+singapur
+kuala lumpur
+dżakarta
+manila
+phnom penh
+yangon
+colombo
+wellington
+auckland
+melbourne
+brisbane
+perth
+adelajda
+canberra
+johannesburg
+pretoria
+durban
+lagos
+akra
+nairobi
+addis abeba
+dakar
+tunis
+algier
+rabat
+casablanca
+marrakesz
+abudża
+luanda
+harare
+lusaka
+kampala
+kigali
+dar es salaam
