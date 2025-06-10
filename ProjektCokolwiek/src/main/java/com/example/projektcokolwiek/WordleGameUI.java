@@ -78,6 +78,8 @@ public class WordleGameUI {
             String sel = kategoriaBox.getValue();
             boolean liczby = "Liczby".equals(sel);
 
+            graTrwa = true; // <-- DODAJ TO TUTAJ
+
             kategoriaBox.setDisable(graTrwa);
             trybBox.setDisable(liczby);
             trybBox.setValue(null);
@@ -85,6 +87,7 @@ public class WordleGameUI {
             probyBox.setValue(null);
             komunikatLabel.setText("Wybierz tryb i/lub liczbę prób.");
         });
+
 
         trybBox.getItems().addAll("Zgadywanie liter", "Zgadywanie słów");
         trybBox.setPromptText("Wybierz tryb");
